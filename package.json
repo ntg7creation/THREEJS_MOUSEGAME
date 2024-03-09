@@ -1,0 +1,20 @@
+{
+  "name": "threejs-journey-exercise",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc && vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^4.5.0"
+  },
+  "dependencies": {
+    "@types/three": "^0.162.0",
+    "gsap": "^3.12.2",
+    "lil-gui": "^0.19.0",
+    "three": "^0.158.0"
+  }
+}

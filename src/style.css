@@ -1,0 +1,39 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body
+{
+    overflow: hidden;
+}
+
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+/* New style for the score */
+#score,
+#timer {
+    position: absolute;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    z-index: 1;
+}
+
+#score {
+    top: 10px;
+    left: 10px;
+}
+
+#timer {
+    top: 50px; /* Adjust this value as needed */
+    left: 10px;
+}
