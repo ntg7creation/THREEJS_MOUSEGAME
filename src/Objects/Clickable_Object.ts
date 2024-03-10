@@ -3,10 +3,23 @@ import * as  MeshFactory from './SimpleMeshFactory'
 import * as myValues from '../Values/Static'
 import * as mySingels from '../GameFolder/Singleton'
 
+
+/**
+ * Interface for observing game events.
+ */
 export interface gameObserver {
-    update(id: number, action:number): void;
+    /**
+     * Updates the observer with the specified ID of the subject and action to be taken. can be change to send Clickable class instead
+     * 
+     * @param id The ID of the object.
+     * @param action The action performed.
+     */
+    update(id: number, action: number): void;
 }
 
+/**
+ * Enum representing different types of clickable objects.
+ */
 export enum Clickables {
     Collect,    // 0
     Avoid,  // 1
@@ -15,40 +28,64 @@ export enum Clickables {
 }
 
 //maybe I should extend mesh
+/**
+ * Abstract class representing a clickable object in the scene.
+ */
 export abstract class Clickable {
     abstract mesh: THREE.Mesh;
-    // ID: string = mySingels.ID_creator.getInstance().getCallCount(); dont need this we have id in mesh
-   // abstract changeSpeed(newspeed: number): void;
-    abstract Behaviour(): void;//can set this to recive an action
+    abstract Behaviour(): void;
     abstract wasClicked(): void;
 }
 
-
-export function ClickableFactory(type: Clickables,size?:number,pos?:THREE.Vector3,observer?:gameObserver): Clickable {
+/**
+ * Factory function to create clickable objects based on the specified type.
+ * 
+ * @param type The type of clickable object to create.
+ * @param size The size of the object. Defaults to undefined if not provided.
+ * @param pos The position of the object. Defaults to undefined if not provided.
+ * @param observer The observer for the object. Defaults to undefined if not provided.
+ * @returns A clickable object of the specified type.
+ */
+export function ClickableFactory(type: Clickables, size?: number, pos?: THREE.Vector3, observer?: gameObserver): Clickable {
     switch (type) {
         case Clickables.Collect:
-            return new Collect(size,observer);
+            return new Collect(size, observer);
         case Clickables.Avoid:
-            return new Avoid(size,observer);
+            return new Avoid(size, observer);
         case Clickables.Change:
-            return new Change(size,pos,observer);
+            return new Change(size, pos, observer);
         default:
-            return new Collect(size,observer);
+            return new Collect(size, observer);
             break;
     }
 }
 
+/**
+ * Represents a collectible object in the scene.
+ * Inherits from Clickable class.
+ */
 class Collect extends Clickable {
-    observer?:gameObserver;
+    observer?: gameObserver;
     mesh: THREE.Mesh;
     speed: THREE.Vector3 = new THREE.Vector3(0.02, 0, 0);
     changeTime: number = 2;
     starttime: number = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
-    constructor(size?: number,observer?:gameObserver) {
+
+    /**
+     * Constructs a new Collect object.
+     * 
+     * @param size The size of the object. Defaults to undefined if not provided.
+     * @param observer The observer for the object. Defaults to undefined if not provided.
+     */
+    constructor(size?: number, observer?: gameObserver) {
         super();
         this.mesh = MeshFactory.createMesh(myValues.Shapes.Box, size, myValues.Colours.GREEN);
-        this.observer=observer;
+        this.observer = observer;
     }
+
+    /**
+     * Defines the behavior of the collectible object.
+     */
     Behaviour(): void {
         let time = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
         if (time - this.starttime > this.changeTime) // elapsed time
@@ -59,72 +96,90 @@ class Collect extends Clickable {
         }
         this.mesh.position.add(this.speed);
     }
+    /**
+     * Handles click event on the collectible object.
+     * Notifies the observer about the click.
+     */
     wasClicked(): void {
         console.log("Collected click")
-        this.observer?.update(this.mesh.id,Clickables.Collect)
+        this.observer?.update(this.mesh.id, Clickables.Collect)
     }
 }
 
 class Avoid extends Clickable {
-    observer?:gameObserver;
+    observer?: gameObserver;
     mesh: THREE.Mesh;
     speed: THREE.Vector3 = new THREE.Vector3(0.02, 0, 0);
     changeTime: number = 3;
     starttime: number = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
 
-    constructor(size?: number,observer?:gameObserver) {
+    /**
+     * Constructs a new Collect object.
+     * 
+     * @param size The size of the object. Defaults to undefined if not provided.
+     * @param observer The observer for the object. Defaults to undefined if not provided.
+     */
+    constructor(size?: number, observer?: gameObserver) {
         super();
         this.mesh = MeshFactory.createMesh(myValues.Shapes.Sphere, size, myValues.Colours.RED);
-        this.observer=observer;
+        this.observer = observer;
     }
 
+    /**
+     * Defines the behavior of the collectible object.
+     */
     Behaviour(): void {
         let time = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
         if (time - this.starttime > this.changeTime) // elapsed time
         {
             this.starttime = time;
             this.speed.multiplyScalar(-1);//change deriction 
-           // console.log("mesh avoid change dirction");
+            // console.log("mesh avoid change dirction");
         }
         this.mesh.position.add(this.speed);
     }
+    
+    /**
+     * Handles click event on the collectible object.
+     * Notifies the observer about the click.
+     */
     wasClicked(): void {
-        this.observer?.update(this.mesh.id,Clickables.Avoid )
+        this.observer?.update(this.mesh.id, Clickables.Avoid)
     }
 }
 
 class Change extends Clickable {
-    observer?:gameObserver;
+    observer?: gameObserver;
     mesh: THREE.Mesh;
     speed: number = -0.5;
     changeTime: number = 4;
     starttime: number = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
-    axis:THREE.Vector3;
-    radios:number;
-    rotationAxis = new THREE.Vector3(0,0,1);
-    state:boolean = false; // represent if red or green false = red
+    axis: THREE.Vector3;
+    radios: number;
+    rotationAxis = new THREE.Vector3(0, 0, 1);
+    state: boolean = false; // represent if red or green false = red
     //TODO check ? is correct in this case
-    constructor(size?: number,pos?:THREE.Vector3,observer?:gameObserver) {
+    constructor(size?: number, pos?: THREE.Vector3, observer?: gameObserver) {
         super();
-        if(pos)
+        if (pos)
             this.axis = pos;
         else
-            this.axis = new THREE.Vector3(0,0,-1);
+            this.axis = new THREE.Vector3(0, 0, -1);
         this.mesh = MeshFactory.createMesh(myValues.Shapes.Pyramid, size, myValues.Colours.RED);
-        this.radios = ((size??1) *2);
-        this.mesh.position.set(this.axis.x,this.axis.y+this.radios,this.axis.z)
-        this.observer=observer;
+        this.radios = ((size ?? 1) * 2);
+        this.mesh.position.set(this.axis.x, this.axis.y + this.radios, this.axis.z)
+        this.observer = observer;
     }
 
     Behaviour(): void {
-        
+
         let time = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
         //translate to 0,0,0
         this.mesh.position.sub(this.axis);
 
         //rotate around 0,0,0 aound the z axis
         //TODO find the correct function to rotate
-        this.mesh.position.set(this.radios * Math.cos(time*this.speed),this.radios * Math.sin(this.speed*time),0)
+        this.mesh.position.set(this.radios * Math.cos(time * this.speed), this.radios * Math.sin(this.speed * time), 0)
 
         //send back to loction
         this.mesh.position.add(this.axis);
@@ -132,15 +187,15 @@ class Change extends Clickable {
         if (time - this.starttime > this.changeTime) // elapsed time
         {
             this.starttime = time; // wihtout this code runs fast I see yellow while its really only green and red
-            if(this.state){
-                this.state=false;
+            if (this.state) {
+                this.state = false;
                 if (this.mesh.material instanceof THREE.MeshBasicMaterial) { //TODO find better soltions
                     (this.mesh.material as THREE.MeshBasicMaterial).color.set(myValues.Colours.RED);
                 }
 
             }
-            else{
-                this.state=true;
+            else {
+                this.state = true;
                 if (this.mesh.material instanceof THREE.MeshBasicMaterial) { //TODO find better soltions
                     (this.mesh.material as THREE.MeshBasicMaterial).color.set(myValues.Colours.GREEN);
                 }
@@ -150,23 +205,40 @@ class Change extends Clickable {
     }
     //in genral im should implement observer pattern here in a way that he gets the Observer else where and this is kind of usless
     wasClicked(): void {
-        this.observer?.update(this.mesh.id,this.state ? Clickables.Collect:Clickables.Avoid )
+        this.observer?.update(this.mesh.id, this.state ? Clickables.Collect : Clickables.Avoid)
     }
 }
 
-export class ButtonMesh extends Clickable{
+export class ButtonMesh extends Clickable {
     mesh: THREE.Mesh = MeshFactory.createMeshSign();
-    observer?:gameObserver;
-    constructor(size?: number,pos?:THREE.Vector3,observer?:gameObserver) {
+    observer?: gameObserver;
+
+    /**
+     * Constructs a new ButtonMesh object.
+     * 
+     * @param size The size of the button. Defaults to undefined if not provided.
+     * @param pos The position of the button. Defaults to undefined if not provided.
+     * @param observer The observer for the button. Defaults to undefined if not provided.
+     */
+    constructor(size?: number, pos?: THREE.Vector3, observer?: gameObserver) {
         super();
         this.observer = observer;
     }
+
+    /**
+     * Defines the behavior of the collectible object.
+     */
     Behaviour(): void {
         throw new Error('Method not implemented.');
     }
+    
+    /**
+     * Handles click event on the collectible object.
+     * Notifies the observer about the click.
+     */
     wasClicked(): void {
         console.log("button click")
-        this.observer?.update(this.mesh.id,Clickables.startButton)
+        this.observer?.update(this.mesh.id, Clickables.startButton)
 
     }
 

@@ -1,22 +1,18 @@
 # THREEJS_MOUSEGAME
 
+## Setup
+Download [Node.js](https://nodejs.org/en/download/).
+Run this followed commands:
 
-## To deploy this project run
+``` bash
+# Install dependencies (only the first time)
+npm install
 
-```bash
-  npm install
-```
-if you don't have vite
+# Run the local server at localhost:8080
+npm run dev
 
-```bash
-  npm run build
-
-```
-
-to start the game on local host run :
-
-```bash
-  npm run dev 
+# Build for production in the dist/ directory
+npm run build
 ```
 
 
