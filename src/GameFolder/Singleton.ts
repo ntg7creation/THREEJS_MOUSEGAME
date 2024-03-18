@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 
 /**
@@ -35,24 +36,42 @@ export class ClockSingleton {
     }
 }
 
-//we dont need this anymore
-// export class ID_creator {
-//     private static instance: ID_creator;
-//     private callCount: number;
 
-//     private constructor() {
-//         this.callCount = 0;
-//     }
+/**
+ * Singleton class for managing a controls instance.
+ */
+export class Controls {
+    private static instance: Controls;
+    private controls: OrbitControls;
 
-//     public static getInstance(): ID_creator {
-//         if (!ID_creator.instance) {
-//             ID_creator.instance = new ID_creator();
-//         }
-//         return ID_creator.instance;
-//     }
+    private constructor(camera:THREE.Camera,canvas:HTMLElement ) {
+        this.controls = new OrbitControls(camera,canvas)
+        this.controls.enableDamping = true;
+        this.controls.saveState();
+    }
 
+    /**
+     * Retrieves the singleton instance of the Controls class.
+     * If an instance does not exist, it creates one.
+     * on first call init
+     * 
+     * @returns The singleton instance of Controls.
+     */
+    public static getInstance(camera?:THREE.Camera,canvas?:HTMLElement): Controls {
+        if (!Controls.instance && camera && canvas) {
+            Controls.instance = new Controls(camera,canvas);
 
-//     public getCallCount(): string {
-//         return ("ID_" + this.callCount++);
-//     }
-// }
+        }
+        // ? add if to make sure it was created
+        return Controls.instance;
+    }
+    
+    /**
+     * Gets the Controls instance.
+     * 
+     * @returns The OrbitControls instance.
+     */
+    public getControls(): OrbitControls {
+        return this.controls;
+    }
+}

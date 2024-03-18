@@ -3,6 +3,7 @@ import * as  MeshFactory from './SimpleMeshFactory'
 import * as myValues from '../Values/Static'
 import * as mySingels from '../GameFolder/Singleton'
 
+const yaxis: THREE.Vector3 = new THREE.Vector3(0, 1, 0);
 
 /**
  * Interface for observing game events.
@@ -33,6 +34,8 @@ export enum Clickables {
  */
 export abstract class Clickable {
     abstract mesh: THREE.Mesh;
+    abstract speed: THREE.Vector3;
+    abstract starttime:number;
     abstract Behaviour(): void;
     abstract wasClicked(): void;
 }
@@ -95,6 +98,7 @@ class Collect extends Clickable {
             //console.log("mesh collect change dirction");
         }
         this.mesh.position.add(this.speed);
+        this.mesh.rotateOnAxis(this.speed.clone().normalize(),Math.abs(this.speed.x + this.speed.y + this.speed.z));
     }
     /**
      * Handles click event on the collectible object.
@@ -137,8 +141,9 @@ class Avoid extends Clickable {
             // console.log("mesh avoid change dirction");
         }
         this.mesh.position.add(this.speed);
+        this.mesh.rotateOnAxis(yaxis,this.speed.x)
     }
-    
+
     /**
      * Handles click event on the collectible object.
      * Notifies the observer about the click.
@@ -151,14 +156,14 @@ class Avoid extends Clickable {
 class Change extends Clickable {
     observer?: gameObserver;
     mesh: THREE.Mesh;
-    speed: number = -0.5;
+    speed: THREE.Vector3 = new THREE.Vector3(-0.5, 0, 0);
     changeTime: number = 4;
     starttime: number = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
     axis: THREE.Vector3;
     radios: number;
     rotationAxis = new THREE.Vector3(0, 0, 1);
-    state: boolean = false; // represent if red or green false = red
-    //TODO check ? is correct in this case
+    state: boolean = false; // represent if red or green false = red 
+
     constructor(size?: number, pos?: THREE.Vector3, observer?: gameObserver) {
         super();
         if (pos)
@@ -179,11 +184,12 @@ class Change extends Clickable {
 
         //rotate around 0,0,0 aound the z axis
         //TODO find the correct function to rotate
-        this.mesh.position.set(this.radios * Math.cos(time * this.speed), this.radios * Math.sin(this.speed * time), 0)
+        this.mesh.position.set(this.radios * Math.cos(time * this.speed.x), this.radios * Math.sin(this.speed.x * time), 0)
 
         //send back to loction
         this.mesh.position.add(this.axis);
-
+        this.mesh.rotateOnAxis(this.speed.clone().normalize(),Math.abs(this.speed.x + this.speed.y + this.speed.z)/10);
+   
         if (time - this.starttime > this.changeTime) // elapsed time
         {
             this.starttime = time; // wihtout this code runs fast I see yellow while its really only green and red
@@ -210,6 +216,9 @@ class Change extends Clickable {
 }
 
 export class ButtonMesh extends Clickable {
+    
+    starttime: number = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
+    speed: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
     mesh: THREE.Mesh = MeshFactory.createMeshSign();
     observer?: gameObserver;
 
@@ -231,7 +240,7 @@ export class ButtonMesh extends Clickable {
     Behaviour(): void {
         throw new Error('Method not implemented.');
     }
-    
+
     /**
      * Handles click event on the collectible object.
      * Notifies the observer about the click.

@@ -12,7 +12,7 @@ export function createMat(color?: string): THREE.MeshBasicMaterial {
     if (color)
         colour = color;
 
-    return new THREE.MeshBasicMaterial({ color: colour, wireframe: false });
+    return new THREE.MeshBasicMaterial({ color: colour, wireframe: false , map: TextureCode.textureNotFound });
 }
 
 /**
