@@ -2,7 +2,10 @@ import GUI from 'lil-gui';
 import * as THREE from 'three';
 import gsap from 'gsap'
 import * as Values from '../Values/Static'
+<<<<<<< HEAD
 import { ClockSingleton } from '../GameFolder/Singleton';
+=======
+>>>>>>> d2ab3eb90b44f30328035126ad380e4453b31920
 
 
 interface debugO {
@@ -27,12 +30,15 @@ export const config:Config = {
     speed:0.02,
 };
 
+<<<<<<< HEAD
 const actions = {
     puase():void{
        ClockSingleton.getInstance().getClock().running ? ClockSingleton.getInstance().getClock().stop() : ClockSingleton.getInstance().getClock().start();
     }
 }
 
+=======
+>>>>>>> d2ab3eb90b44f30328035126ad380e4453b31920
 // ? change to singleton
 const gui = new GUI({
     width: 300,
@@ -53,7 +59,10 @@ export function InitGameUI(): void {
    gui.add(config,'avoidAmount',1,10,1);
    gui.add(config,'changeAmount',1,10,1);
    gui.add(config,'speed',0.005,0.05);
+<<<<<<< HEAD
    gui.add(actions, "puase")
+=======
+>>>>>>> d2ab3eb90b44f30328035126ad380e4453b31920
 }
 
 export function BasicDebug(folder: GUI, mesh: THREE.Mesh, material: THREE.MeshBasicMaterial): void {

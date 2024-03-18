@@ -126,7 +126,11 @@ export class MouseGame implements gameObserver {
                 tempChange.starttime = -10;
                 tempChange.Behaviour()
             }
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> d2ab3eb90b44f30328035126ad380e4453b31920
         }
         this.start_sign.mesh.visible = false;
     }

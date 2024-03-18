@@ -94,6 +94,7 @@ class screen {
       timerElement,
       this.OutlinePass.selectedObjects
     );
+
   }
 
   InitGUI() {
@@ -111,6 +112,9 @@ class screen {
     this.InitGame(); // depends on render
     this.InitWindow(); // depends on render
   }
+
+
+
 
   // Game tick function
   animate = () => {
