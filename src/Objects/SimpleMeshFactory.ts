@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import * as myMat from './Mats/MaterialsFactory';
 import * as myValues from '../Values/Static'
 
-
 /**
  * Creates a mesh representing a sign with a texture.
  * 

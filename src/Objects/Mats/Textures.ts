@@ -29,3 +29,6 @@ textureWin.colorSpace = THREE.SRGBColorSpace
 
 export const textureLose = textureLoader.load('/textures/losescreen.png')
 textureLose.colorSpace = THREE.SRGBColorSpace
+
+export const textureNotFound = textureLoader.load('/textures/whiteblackCheckers.png')
+textureNotFound.colorSpace = THREE.SRGBColorSpace; 

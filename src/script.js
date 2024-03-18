@@ -1,7 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass";
+
+import * as mySingles from "./GameFolder/Singleton"
 import * as myCameras from "./Objects/Camera_Objects";
 import * as Games from "./GameFolder/GameFile";
+import * as GUI from "./GUI/DebugUI"
 
 const scoreElement = document.getElementById("score-value");
 const timerElement = document.getElementById("timer-value");
@@ -27,15 +33,17 @@ class screen {
   // Initializes the camera
   InitCamera() {
     this.camera = myCameras.createCamera(
-      this.scene,
       this.sizes.width,
       this.sizes.height
     );
+    this.scene.add(this.camera);
   }
   // Initializes the camera
   InitControls() {
-    this.controls = new OrbitControls(this.camera, this.canvas);
-    this.controls.enableDamping = true;
+    mySingles.Controls.getInstance(this.camera,this.canvas);
+    // this.controls = new OrbitControls(this.camera, this.canvas);
+    // this.controls.enableDamping = true;
+    // this.controls.saveState();
   }
 
   // Initializes the window resize event listener
@@ -60,12 +68,18 @@ class screen {
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
     this.renderer.setSize(this.sizes.width, this.sizes.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    //create a composer for postprossesing effects
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene,this.camera))
+    //add outline effect
+    this.OutlinePass = new OutlinePass(undefined,this.scene,this.camera,undefined); // save the outline pass
+    this.composer.addPass(this.OutlinePass);
   }
 
   // Initializes the game logic
   InitGame() {
-     // Create axes helper for better field of view
-    this.axesHelper = new THREE.AxesHelper(5); 
+    // Create axes helper for better field of view
+    this.axesHelper = new THREE.AxesHelper(5);
     axisID = this.axesHelper.id;
     console.log("axis id : " + this.axesHelper.id);
     this.scene.add(this.axesHelper);
@@ -75,35 +89,50 @@ class screen {
       this.scene,
       this.camera,
       scoreElement,
-      timerElement
+      timerElement,
+      this.OutlinePass.selectedObjects  
     );
+
+  }
+
+
+  InitGUI(){
+    GUI.InitGameUI();
   }
 
   // Initializes all components
   InitAll() {
+    this.InitGUI();
     this.InitCamera();
-    this.InitControls();
-    this.InitGame();
-    this.InitRender();
-    this.InitWindow();
+    
+    this.InitControls(); // depends on camera
+    this.InitRender();// depends on camera
+
+    this.InitGame(); // depends on render
+    this.InitWindow();// depends on render
+
+
   }
 
+
+
+
   // Game tick function
-  tick = () => {
+  animate = () => {
     //const elapsedTime = clock.getElapsedTime(); // can ensure a game only tick 60 per sec
 
     // Update controls
-    this.controls.update();
+   // this.controls.update();
 
     //Give Game tick
     this.Game.tick();
 
-    // Render 
-    this.renderer.render(this.scene, this.camera);
+    // Render
+    //this.renderer.render(this.scene, this.camera);
+    this.composer.render();
 
     // Call tick again on the next frame
-    window.requestAnimationFrame(this.tick);
-
+    window.requestAnimationFrame(this.animate);
   };
 }
 
@@ -111,7 +140,7 @@ class screen {
 const canvas = document.querySelector("canvas.webgl");
 // create a screen that will display on the canvas
 const myscreen = new screen(canvas);
-myscreen.tick();
+myscreen.animate();
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();

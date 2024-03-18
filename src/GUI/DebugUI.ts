@@ -2,12 +2,8 @@ import GUI from 'lil-gui';
 import * as THREE from 'three';
 import gsap from 'gsap'
 import * as Values from '../Values/Static'
-import { Clickable } from '@/Objects/Clickable_Object';
-// interface GUIOptions {
-//     width: number;
-//     title: string;
-//     closeFolders: boolean;
-// }
+
+
 interface debugO {
     color: string;
     subdivision: number;
@@ -15,10 +11,25 @@ interface debugO {
     spin: () => void;
 }
 
-//change to singleton
+//not sure about the architecture here 
+ export interface Config  {
+    collectAmount: number;
+    avoidAmount: number;
+    changeAmount: number;
+    speed:number;
+}
+
+export const config:Config = {
+    collectAmount:3,
+    avoidAmount:3,
+    changeAmount:3,
+    speed:0.02,
+};
+
+// ? change to singleton
 const gui = new GUI({
     width: 300,
-    title: 'Nice debug UI',
+    title: 'debug UI',
     closeFolders: false
 });
 
@@ -30,19 +41,11 @@ function addSpin(debugObject: any, mesh: THREE.Mesh): void {
     }
 }
 
-export function GameDebug(folder: GUI, meshMap: Map<string,Clickable>,debugObject:debugO): void {
-    folder
-    .add(debugObject, 'speed')
-    .min(0)
-    .max(3)
-    .step(0.01)
-    .name('elevation')
-    // .onChange(() => {
-    //     for (const [key, value] of meshMap.entries()) 
-    //         value.changeSpeed(debugObject.speed);
-
-    // });
-
+export function InitGameUI(): void {
+   gui.add(config,'collectAmount',1,10,1);
+   gui.add(config,'avoidAmount',1,10,1);
+   gui.add(config,'changeAmount',1,10,1);
+   gui.add(config,'speed',0.005,0.05);
 }
 
 export function BasicDebug(folder: GUI, mesh: THREE.Mesh, material: THREE.MeshBasicMaterial): void {
@@ -107,7 +110,6 @@ export function addFolder(Name: string): GUI {
 
 }
 
-export function Init(): void {
+export function InitGui(): void {
     const cubeTweaks = gui.addFolder("typescriptfolder")
-    console.log("Hello, World!");
 }

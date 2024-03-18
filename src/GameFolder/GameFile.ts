@@ -2,7 +2,7 @@ import * as THREE from "three";
 import * as mySingels from '../GameFolder/Singleton'
 import * as myMat from '../Objects/Mats/MaterialsFactory';
 import { ButtonMesh, Clickable, ClickableFactory, Clickables, gameObserver } from '../Objects/Clickable_Object'
-
+import {Config,config} from '../GUI/DebugUI'
 
 
 
@@ -10,16 +10,17 @@ import { ButtonMesh, Clickable, ClickableFactory, Clickables, gameObserver } fro
  * Class representing the mouse game.
  */
 export class MouseGame implements gameObserver {
+
+
+    public gameValues:Config = config;
     private meshMap: Map<number, Clickable> = new Map<number, Clickable>();
     private scene: THREE.Scene;
     private start_sign = new ButtonMesh(undefined, undefined, this);//new THREE.PlaneGeometry(6, 2);
     private camera: THREE.PerspectiveCamera;
-    private collectamount: number = 3;
-    private avoidamount: number = 3;
-    private changeamount: number = 3;
     private score = 0;
     private scoreElement: HTMLElement;
     private timerElement: HTMLElement;
+    private highLightArr: THREE.Mesh[] | undefined;
 
     /**
      * Constructs a new MouseGame object.
@@ -29,12 +30,13 @@ export class MouseGame implements gameObserver {
      * @param scoreElement The element to display the score.
      * @param timerElement The element to display the timer.
      */
-    constructor(scene: THREE.Scene, camera: THREE.PerspectiveCamera, scoreElement: HTMLElement, timerElement: HTMLElement) {
+    constructor(scene: THREE.Scene, camera: THREE.PerspectiveCamera, scoreElement: HTMLElement, timerElement: HTMLElement,highLightArr?:THREE.Mesh[]) {
         this.scene = scene;
         this.camera = camera;// not sure we should lower camera here 
         this.scene.add(this.start_sign.mesh)
         this.scoreElement = scoreElement;
         this.timerElement = timerElement;
+        this.highLightArr = highLightArr;
     }
 
     /**
@@ -58,7 +60,7 @@ export class MouseGame implements gameObserver {
                 this.updateScore();
                 if (this.meshMap.get(id))
                     (this.meshMap.get(id) as Clickable).mesh.visible = false; // maybe delete
-                if (this.score == this.avoidamount + this.collectamount) {
+                if (this.score == this.gameValues.changeAmount + this.gameValues.collectAmount) {
                     this.start_sign.mesh.material = myMat.createTextureMatWin();
                     this.stopGame();
                 }
@@ -81,24 +83,38 @@ export class MouseGame implements gameObserver {
      * Starts the game.
      */
     private startGame(): void {
+        //get new config values
+        this.gameValues = config
+        //craete objects 
         mySingels.ClockSingleton.getInstance().getClock().start();
         this.score = 0;
         this.updateScore();
-        for (let index = 0; index < this.collectamount; index++) {
+        for (let index = 0; index < this.gameValues.collectAmount; index++) {
             const tempCollect: Clickable = ClickableFactory(Clickables.Collect, getRandomNumberInRange(0.1, 3), undefined, this);
             this.meshMap.set(tempCollect.mesh.id, tempCollect);
             tempCollect.mesh.position.set(getRandomNumberInRange(-10, 10), 1, getRandomNumberInRange(-1, -30));
             console.log("collect id:" + tempCollect.mesh.id);
             this.scene.add(tempCollect.mesh);
+            // ! test highlight
+            this.highLightArr?.push(tempCollect.mesh);
+            for (let setstart = getRandomNumberInRange(0,6); setstart > 0; setstart--) {
+                tempCollect.starttime = -10;
+                tempCollect.Behaviour()
+            }
+
         }
-        for (let index = 0; index < this.avoidamount; index++) {
+        for (let index = 0; index < this.gameValues.avoidAmount; index++) {
             const tempAvoid: Clickable = ClickableFactory(Clickables.Avoid, getRandomNumberInRange(0.1, 3), undefined, this);
             this.meshMap.set(tempAvoid.mesh.id, tempAvoid);
             tempAvoid.mesh.position.set(getRandomNumberInRange(-10, 10), 1, getRandomNumberInRange(-3, -30));
             console.log("avoid id:" + tempAvoid.mesh.id);
             this.scene.add(tempAvoid.mesh);
+            for (let setstart = getRandomNumberInRange(0,6); setstart > 0; setstart--) {
+                tempAvoid.starttime = -10;
+                tempAvoid.Behaviour()
+            }
         }
-        for (let index = 0; index < this.changeamount; index++) {
+        for (let index = 0; index < this.gameValues.changeAmount; index++) {
             const tempChange: Clickable = ClickableFactory(Clickables.Change,
                 getRandomNumberInRange(0.1, 3), // size
                 new THREE.Vector3(getRandomNumberInRange(-10, 10), getRandomNumberInRange(-2, 2), getRandomNumberInRange(-3, -30)),// pos
@@ -106,6 +122,11 @@ export class MouseGame implements gameObserver {
             this.meshMap.set(tempChange.mesh.id, tempChange);
             console.log("avoid id:" + tempChange.mesh.id);
             this.scene.add(tempChange.mesh);
+            for (let setstart = getRandomNumberInRange(0,4); setstart > 0; setstart--) {
+                tempChange.starttime = -10;
+                tempChange.Behaviour()
+            }
+            
         }
         this.start_sign.mesh.visible = false;
     }
@@ -120,10 +141,9 @@ export class MouseGame implements gameObserver {
             // recreate meshMap I dont know if this will cose memory leak
         }
         this.start_sign.mesh.visible = true;
-        this.camera.position.set(0, 0, 1); //reset camera - its not resting as I want still have an angel
-        this.camera.rotation.set(0, 0, -1);
-        this.camera.lookAt(this.start_sign.mesh.position);
 
+        // resets camera 
+        mySingels.Controls.getInstance().getControls().reset();
     }
 
     //should be a better way to send the click down
@@ -152,6 +172,7 @@ export class MouseGame implements gameObserver {
      */
     public tick(): void {
         let time = mySingels.ClockSingleton.getInstance().getClock().getElapsedTime();
+        mySingels.Controls.getInstance().getControls().update();
 
         this.timerElement.innerText = time.toString();
         if (!this.start_sign.mesh.visible)
